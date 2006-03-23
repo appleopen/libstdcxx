@@ -38,7 +38,7 @@ AEP_Patches    = tilde-in-pathnames.patch emergency-buffer-reduction.patch \
 		 export-control.patch cross-configury.patch eprintf.patch \
 		 testsuite-4.0.1.patch \
 		 libtool-jaguar.patch jaguar-semun.patch jaguar-abilimits.patch \
-		 stdexcept_vis.patch
+		 stdexcept_vis.patch testuite-06-03-10.patch
 
 ifeq ($(suffix $(AEP_Filename)),.bz2)
 AEP_ExtractOption = j
@@ -96,19 +96,21 @@ endif
 
 # Rearrange the final destroot to be just the way we want it.
 post-install:
-	if [ -d $(DSTROOT)/usr/lib/ppc64 ] ; then \
-	  install_name_tool -id /usr/lib/libstdc++.6.dylib \
-	    $(DSTROOT)/usr/lib/ppc64/libstdc++.6.*.dylib && \
-	  for f in `cd $(DSTROOT)/usr/lib/ppc64 && echo *.{dylib,a}` ; do \
-	    if [ ! -L $(DSTROOT)/usr/lib/ppc64/$$f ] ; then \
-		lipo -create -output $(DSTROOT)/usr/lib/$${f}~ \
-		  $(DSTROOT)/usr/lib/$${f} $(DSTROOT)/usr/lib/ppc64/$${f} && \
-		mv $(DSTROOT)/usr/lib/$${f}~ $(DSTROOT)/usr/lib/$${f} || \
-		exit 1 ; \
-	    fi ; \
-	  done && \
-	  $(RM) -r $(DSTROOT)/usr/lib/ppc64 ; \
-	fi
+	for arch64 in ppc64 x86_64 ; do \
+	  if [ -d $(DSTROOT)/usr/lib/$$arch64 ] ; then \
+	    install_name_tool -id /usr/lib/libstdc++.6.dylib \
+	      $(DSTROOT)/usr/lib/$$arch64/libstdc++.6.*.dylib && \
+	    for f in `cd $(DSTROOT)/usr/lib/$$arch64 && echo *.{dylib,a}` ; do \
+	      if [ ! -L $(DSTROOT)/usr/lib/$$arch64/$$f ] ; then \
+		  lipo -create -output $(DSTROOT)/usr/lib/$${f}~ \
+		    $(DSTROOT)/usr/lib/$${f} $(DSTROOT)/usr/lib/$$arch64/$${f} && \
+		  mv $(DSTROOT)/usr/lib/$${f}~ $(DSTROOT)/usr/lib/$${f} || \
+		  exit 1 ; \
+	      fi ; \
+	    done && \
+	    $(RM) -r $(DSTROOT)/usr/lib/$$arch64 ; \
+	  fi ; \
+	done
 	$(RM) $(DSTROOT)/usr/lib/*.la
 	$(RM) $(DSTROOT)/usr/lib/libiberty.a
 	$(RM) $(DSTROOT)/usr/lib/libstdc++.dylib
@@ -122,6 +124,10 @@ post-install:
 	    $(MKDIR) $(DSTROOT)/$i && \
 	    (cd $(DSTROOT) && find usr $(SDKEXCLUDE) -print | \
 	     cpio -pdm $(DSTROOT)/$$i ) || exit 1 ; \
+	    if [ $(MACOSX_DEPLOYMENT_TARGET) == 10.3 ] ; then \
+	      ln -s powerpc-apple-darwin7 \
+	            $(DSTROOT)/$$i/usr/include/c++/4.0.0/powerpc-apple-darwin8 ; \
+	    fi ; \
 	  done ; \
 	  $(RM) -r $(DSTROOT)/[^D]* ; \
 	fi
