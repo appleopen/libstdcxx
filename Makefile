@@ -20,8 +20,7 @@ Environment	     += CXX_FOR_TARGET="$(CXX) -arch $$arch" \
 			CONFIGURED_LD_FOR_TARGET="$(LD) -arch $$arch" \
 			CONFIGURED_NM_FOR_TARGET="nm -arch $$arch" \
 			CONFIGURED_AR_FOR_TARGET="$(AR)" \
-			CONFIGURED_RANLIB_FOR_TARGET="ranlib" \
-			OPT_LDFLAGS="-Wl,-dead_strip"
+			CONFIGURED_RANLIB_FOR_TARGET="ranlib"
 
 
 # It's a GNU Source project
@@ -34,15 +33,12 @@ AEP_Version    = 4.0.0
 AEP_ProjVers   = $(AEP_Project)-$(AEP_Version)
 AEP_Filename   = $(AEP_ProjVers).tar.bz2
 AEP_ExtractDir = $(AEP_ProjVers)
-# LUNA LOCAL begin custom patches
 AEP_Patches    = tilde-in-pathnames.patch emergency-buffer-reduction.patch \
 		 keymgr.patch testing-installed.patch align-natural-abi.patch \
 		 export-control.patch cross-configury.patch eprintf.patch \
 		 testsuite-4.0.1.patch \
 		 libtool-jaguar.patch jaguar-semun.patch jaguar-abilimits.patch \
-		 stdexcept_vis.patch testuite-06-03-10.patch fstream.patch \
-		 luna-4672604.patch luna-4757063.patch
-# LUNA LOCAL end custom patches
+		 stdexcept_vis.patch
 
 ifeq ($(suffix $(AEP_Filename)),.bz2)
 AEP_ExtractOption = j
@@ -100,27 +96,18 @@ endif
 
 # Rearrange the final destroot to be just the way we want it.
 post-install:
-	for arch64 in ppc64 x86_64 v6 ; do \
-	  if [ -d $(DSTROOT)/usr/lib/$$arch64 ] ; then \
-	    install_name_tool -id /usr/lib/libstdc++.6.dylib \
-	      $(DSTROOT)/usr/lib/$$arch64/libstdc++.6.*.dylib && \
-	    for f in `cd $(DSTROOT)/usr/lib/$$arch64 && echo *.{dylib,a}` ; do \
-	      if [ ! -f $(DSTROOT)/usr/lib/$$f ] ; then \
-		  mv $(DSTROOT)/usr/lib/$$arch64/$${f} $(DSTROOT)/usr/lib/$${f} ; \
-	      elif [ ! -L $(DSTROOT)/usr/lib/$$arch64/$$f ] ; then \
-		  lipo -create -output $(DSTROOT)/usr/lib/$${f}~ \
-		    $(DSTROOT)/usr/lib/$${f} $(DSTROOT)/usr/lib/$$arch64/$${f} && \
-		  mv $(DSTROOT)/usr/lib/$${f}~ $(DSTROOT)/usr/lib/$${f} || \
-		  exit 1 ; \
-	      fi ; \
-	    done && \
-	    $(RM) -r $(DSTROOT)/usr/lib/$$arch64 ; \
-	  fi ; \
-	done
-	if [ -d $(DSTROOT)/usr/include/c++/4.0.0/armv6-apple-darwin$(DARWIN_VERS) ] && \
-	   [ ! -d $(DSTROOT)/usr/include/c++/4.0.0/arm-apple-darwin$(DARWIN_VERS) ] ; then \
-	  mv $(DSTROOT)/usr/include/c++/4.0.0/armv6-apple-darwin$(DARWIN_VERS) \
-	     $(DSTROOT)/usr/include/c++/4.0.0/arm-apple-darwin$(DARWIN_VERS) ; \
+	if [ -d $(DSTROOT)/usr/lib/ppc64 ] ; then \
+	  install_name_tool -id /usr/lib/libstdc++.6.dylib \
+	    $(DSTROOT)/usr/lib/ppc64/libstdc++.6.*.dylib && \
+	  for f in `cd $(DSTROOT)/usr/lib/ppc64 && echo *.{dylib,a}` ; do \
+	    if [ ! -L $(DSTROOT)/usr/lib/ppc64/$$f ] ; then \
+		lipo -create -output $(DSTROOT)/usr/lib/$${f}~ \
+		  $(DSTROOT)/usr/lib/$${f} $(DSTROOT)/usr/lib/ppc64/$${f} && \
+		mv $(DSTROOT)/usr/lib/$${f}~ $(DSTROOT)/usr/lib/$${f} || \
+		exit 1 ; \
+	    fi ; \
+	  done && \
+	  $(RM) -r $(DSTROOT)/usr/lib/ppc64 ; \
 	fi
 	$(RM) $(DSTROOT)/usr/lib/*.la
 	$(RM) $(DSTROOT)/usr/lib/libiberty.a
@@ -135,10 +122,6 @@ post-install:
 	    $(MKDIR) $(DSTROOT)/$i && \
 	    (cd $(DSTROOT) && find usr $(SDKEXCLUDE) -print | \
 	     cpio -pdm $(DSTROOT)/$$i ) || exit 1 ; \
-	    if [ $(MACOSX_DEPLOYMENT_TARGET) == 10.3 ] ; then \
-	      ln -s powerpc-apple-darwin7 \
-	            $(DSTROOT)/$$i/usr/include/c++/4.0.0/powerpc-apple-darwin8 ; \
-	    fi ; \
 	  done ; \
 	  $(RM) -r $(DSTROOT)/[^D]* ; \
 	fi

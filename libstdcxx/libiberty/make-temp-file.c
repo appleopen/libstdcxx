@@ -125,8 +125,7 @@ choose_tmpdir ()
      and return it.  */
   len = strlen (base);
   tmpdir = xmalloc (len + 2);
-  /* LUNA LOCAL don't use unbounded string writes */
-  strlcpy (tmpdir, base, len + 2);
+  strcpy (tmpdir, base);
   tmpdir[len] = DIR_SEPARATOR;
   tmpdir[len+1] = '\0';
 
@@ -164,17 +163,9 @@ make_temp_file (suffix)
   temp_filename = xmalloc (base_len
 			   + TEMP_FILE_LEN
 			   + suffix_len + 1);
-  /* LUNA LOCAL begin don't use unbounded string writes */
-  strlcpy (temp_filename,
-	   base,
-	   base_len + TEMP_FILE_LEN + suffix_len + 1);
-  strlcpy (temp_filename + base_len,
-	   TEMP_FILE,
-	   TEMP_FILE_LEN + suffix_len + 1);
-  strlcpy (temp_filename + base_len + TEMP_FILE_LEN,
-	   suffix,
-	   suffix_len + 1);
-  /* LUNA LOCAL end don't use unbounded string writes */
+  strcpy (temp_filename, base);
+  strcpy (temp_filename + base_len, TEMP_FILE);
+  strcpy (temp_filename + base_len + TEMP_FILE_LEN, suffix);
 
   fd = mkstemps (temp_filename, suffix_len);
   /* If mkstemps failed, then something bad is happening.  Maybe we should

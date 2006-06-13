@@ -682,8 +682,6 @@ demangle_qualifier (c)
   return qualifier_string (code_for_qualifier (c));
 }
 
-/* LUNA LOCAL don't use unbounded string writes */
-#if 0 /* Not needed for libstdc++, and introduces strcat dependencies.  */
 int
 cplus_demangle_opname (opname, result, options)
      const char *opname;
@@ -813,8 +811,6 @@ cplus_demangle_opname (opname, result, options)
   return ret;
 
 }
-/* LUNA LOCAL don't use unbounded string writes */
-#endif
 
 /* Takes operator name as e.g. "++" and returns mangled
    operator name (e.g. "postincrement_expr"), or NULL if not found.
@@ -1063,8 +1059,7 @@ ada_demangle (mangled, option)
 	     sizeof (char));
 
   if (mangled[0] == '<')
-     /* LUNA LOCAL don't use unbounded string writes */
-     strlcpy (demangled, mangled, demangled_size);
+     strcpy (demangled, mangled);
   else
     sprintf (demangled, "<%s>", mangled);
 

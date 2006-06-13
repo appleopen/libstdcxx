@@ -58,7 +58,7 @@ void test16()
       VERIFY( false );
     }
   
-  semaphore s1, s2;
+  semaphore s1;
   int fval = fork();
   if (fval == -1)
     {
@@ -74,7 +74,6 @@ void test16()
       fbout.pubsync();
       s1.wait ();
       fbout.close();
-      s2.signal();
       exit(0);
     }
 
@@ -96,7 +95,6 @@ void test16()
 
   fb.close();
   s1.signal ();
-  s2.wait();
 }
 
 int main() 

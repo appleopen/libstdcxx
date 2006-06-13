@@ -200,8 +200,7 @@ dyn_string_copy (dest, src)
   if (dyn_string_resize (dest, src->length) == NULL)
     return 0;
   /* Copy DEST into SRC.  */
-  /* LUNA LOCAL don't use unbounded string writes */
-  strlcpy (dest->s, src->s, dest->allocated);
+  strcpy (dest->s, src->s);
   /* Update the size of DEST.  */
   dest->length = src->length;
   return 1;
@@ -221,8 +220,7 @@ dyn_string_copy_cstr (dest, src)
   if (dyn_string_resize (dest, length) == NULL)
     return 0;
   /* Copy DEST into SRC.  */
-  /* LUNA LOCAL don't use unbounded string writes */
-  strlcpy (dest->s, src, dest->allocated);
+  strcpy (dest->s, src);
   /* Update the size of DEST.  */
   dest->length = length;
   return 1;
@@ -342,8 +340,7 @@ dyn_string_append (dest, s)
 {
   if (dyn_string_resize (dest, dest->length + s->length) == 0)
     return 0;
-  /* LUNA LOCAL don't use unbounded string writes */
-  strlcpy (dest->s + dest->length, s->s, dest->allocated - dest->length);
+  strcpy (dest->s + dest->length, s->s);
   dest->length += s->length;
   return 1;
 }
@@ -363,8 +360,7 @@ dyn_string_append_cstr (dest, s)
      one for the null at the end.  */
   if (dyn_string_resize (dest, dest->length + len) == NULL)
     return 0;
-  /* LUNA LOCAL don't use unbounded string writes */
-  strlcpy (dest->s + dest->length, s, dest->allocated - dest->length);
+  strcpy (dest->s + dest->length, s);
   dest->length += len;
   return 1;
 }

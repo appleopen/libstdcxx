@@ -62,10 +62,8 @@ choose_temp_base ()
 
   len = strlen (base);
   temp_filename = xmalloc (len + TEMP_FILE_LEN + 1);
-  /* LUNA LOCAL begin don't use unbounded string writes */
-  strlcpy (temp_filename, base, len + TEMP_FILE_LEN + 1);
-  strlcpy (temp_filename + len, TEMP_FILE, TEMP_FILE_LEN + 1);
-  /* LUNA LOCAL end don't use unbounded string writes */
+  strcpy (temp_filename, base);
+  strcpy (temp_filename + len, TEMP_FILE);
 
   mktemp (temp_filename);
   if (strlen (temp_filename) == 0)
